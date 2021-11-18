@@ -9,7 +9,6 @@
 # Changelog     : 11/17/2021 - Initial Script
 
 import urllib.request
-import ssl
 import zipfile
 import io
 import os
@@ -38,7 +37,6 @@ class URLHtmlParser(HTMLParser):
 
 class ConfigurationProfile:
     """Class to create and manipulate Configuration Profiles.
-    The actual plist content can be accessed as a dictionary via the 'data' attribute.
     """
     def __init__(self, identifier, uuid=False, removal_allowed=False, organization='', displayname=''):
         self.data = {}
@@ -63,11 +61,9 @@ class ConfigurationProfile:
     
     def _addCertificatePayload(self, payload_content, certname, certtype):
         """Add a Certificate payload to the profile. Takes a dict which will be the
-        PayloadContent dict within the payload. Handles the boilerplate, naming and descriptive
-        elements.
+        PayloadContent dict within the payload.
         """
         payload_dict = {}
-        # Boilerplate
         payload_dict['PayloadVersion'] = 1
         payload_dict['PayloadUUID'] = makeNewUUID()
         payload_dict['PayloadEnabled'] = True
@@ -78,15 +74,14 @@ class ConfigurationProfile:
         else:
             payload_dict['PayloadType'] = 'com.apple.security.pkcs1'
             payload_dict['PayloadIdentifier'] = 'com.apple.security.pkcs1.' + payload_dict['PayloadUUID']
-        
-        
+                
         payload_dict['PayloadDisplayName'] = certname
         payload_dict['AllowAllAppsAccess'] = False
         payload_dict['PayloadCertificateFileName'] = certname + ".cer"
         payload_dict['KeyIsExtractable'] = True
         payload_dict['PayloadDescription'] = "Adds a PKCS#1-formatted certificate"
 
-        # Add our actual MCX/Plist content
+        # Add our actual content
         payload_dict['PayloadContent'] = payload_content
 
         # Add to the profile's PayloadContent array
@@ -116,9 +111,6 @@ class ConfigurationProfile:
             certtype = "root"
         else:
             certtype = "intermediate"
-
-        print(payload_content)
-        
 
         self._addCertificatePayload(Data(bytes(payload_content, 'utf-8')), name, certtype)
 
@@ -181,7 +173,6 @@ def main():
         metavar='PATH',
         help="Output path for profile. Defaults to '<name of DOD Cert file>.mobileconfig' in the current working directory.")
 
-
     options, args = parser.parse_args()
 
     if len(args):
@@ -196,11 +187,6 @@ def main():
 
     # URL to the DOD PKE library, will parse its contents to locate the .zip file to process
     pke_library_url = "https://public.cyber.mil/pki-pke/pkipke-document-library/"
-
-    # setup SSL connection to ignore SSL warnings
-    # ctx = ssl.create_default_context()
-    # ctx.check_hostname = False
-    # ctx.verify_mode = ssl.CERT_NONE
 
     pke_site_contents = urllib.request.urlopen(url=pke_library_url)
 
