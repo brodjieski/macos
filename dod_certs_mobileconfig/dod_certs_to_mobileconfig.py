@@ -16,6 +16,7 @@ import tempfile
 import subprocess
 import sys
 import os.path
+import base64
 import optparse
 import re
 from plistlib import Data, writePlist, dump
@@ -97,6 +98,9 @@ class ConfigurationProfile:
         cert = regex.search(pemfile)
         
         payload_content = cert.group(2)
+        payload_content_ascii = payload_content.encode('ascii')
+        payload_content_bytes = base64.b64decode(payload_content_ascii)
+    
 
         name_regex_pattern = '(^subject.*)((?<=CN=)>*?.*)'
         name_regex = re.compile(name_regex_pattern, flags=re.MULTILINE)
@@ -111,8 +115,8 @@ class ConfigurationProfile:
             certtype = "root"
         else:
             certtype = "intermediate"
-
-        self._addCertificatePayload(Data(bytes(payload_content, 'utf-8')), name, certtype)
+        
+        self._addCertificatePayload(Data(payload_content_bytes), name, certtype)
 
     def finalizeAndSave(self, output_path):
         """Perform last modifications and save to an output plist.
@@ -183,7 +187,6 @@ def main():
     tempdir = tempfile.mkdtemp()
     pem_file = tempdir + "/dod.txt"
     pem_file_prefix = tempdir + "/DoD_CA-"
-
 
     # URL to the DOD PKE library, will parse its contents to locate the .zip file to process
     pke_library_url = "https://public.cyber.mil/pki-pke/pkipke-document-library/"
