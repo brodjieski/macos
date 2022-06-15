@@ -19,19 +19,6 @@ import logging
 import re
 from plistlib import Data, dump
 from uuid import uuid4
-from html.parser import HTMLParser
-
-class URLHtmlParser(HTMLParser):
-    links = []
-    
-    def handle_starttag(self, tag, attrs):
-        if tag != 'a':
-            return
-            
-        for attr in attrs:
-            if 'href' in attr[0]:
-                self.links.append(attr[1])
-                break
 
 class ConfigurationProfile:
     """Class to create and manipulate Configuration Profiles.
