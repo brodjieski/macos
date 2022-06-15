@@ -1,0 +1,107 @@
+# This config file is meant to provide sane values to OpenSSL
+# to create a CA and sign certificates for typical webu usage
+# (i.e. webserver, database connections, etc)
+# It is possible to tweak verious configurations like
+# extendedKeyUsage params.
+
+HOME = .
+
+
+[ ca ]
+default_ca = CA_default
+
+
+[ CA_default ]
+dir              = .
+serial           = $dir/serial
+database         = $dir/index.txt
+new_certs_dir    = $dir/newcerts
+certificate      = $dir/CA/ca.crt
+private_key      = $dir/CA/private/ca.key
+default_days     = 90
+default_md       = sha512
+preserve         = no                     # whether keep DN ordering
+email_in_dn      = no
+nameopt          = default_ca
+certopt          = default_ca
+policy           = policy_match
+
+crlnumber        = $dir/crlnumber         # the current crl number
+crl              = $dir/crl/crl.pem       # The current CRL
+default_crl_days = 30                     # how long before next CRL
+
+RANDFILE         = $dir/CA/private/.rand  # private random number file
+copy_extensions  = copy                   # Honor extensions requested of us
+
+
+[ req ]
+default_bits       = 2048                 # Size of keys
+default_keyfile    = key.pem              # name of generated keys
+default_md         = sha256               # message digest algorithm
+string_mask        = utf8only             # permitted characters
+distinguished_name = req_distinguished_name
+req_extensions     = v3_req
+
+
+[ req_distinguished_name ]
+0.organizationName      = Organization Name (company)
+organizationalUnitName = Organizational Unit Name (department, division)
+emailAddress           = Email Address
+emailAddress_max       = 40
+localityName            = Locality Name (city, district)
+stateOrProvinceName     = State or Province Name (full name)
+countryName             = Country Name (2 letter code)
+countryName_min         = 2
+countryName_max         = 2
+commonName              = Common Name (hostname, IP, or your name)
+commonName_max          = 64
+
+
+# Defaults:
+0.organizationName_default     = CSET
+organizationalUnitName_default = Test PKI
+localityName_default           = Cleveland
+stateOrProvinceName_default    = Ohio
+countryName_default            = US
+emailAddress_default           = user@example.com
+
+
+[ v3_req_orig ]
+basicConstraints     = critical,CA:FALSE
+subjectKeyIdentifier = hash
+keyUsage             = critical, nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
+extendedKeyUsage     = critical,serverAuth, clientAuth, msSmartcardLogin
+
+
+[ v3_ca ]
+basicConstraints       = critical,CA:TRUE
+subjectKeyIdentifier   = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+keyUsage               = cRLSign, keyCertSign
+issuerAltName          = issuer:copy
+
+[ policy_match ]
+countryName            = optional
+stateOrProvinceName    = optional
+organizationName       = optional
+organizationalUnitName = optional
+commonName             = supplied
+emailAddress           = optional
+
+
+[ crl_ext ]    # CRL extensions.
+issuerAltName          = issuer:copy
+authorityKeyIdentifier = keyid:always,issuer:always
+
+[ v3_key_enc ]
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, keyEncipherment
+extendedKeyUsage = emailProtection
+subjectKeyIdentifier = hash
+
+[ v3_req ]
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = critical, clientAuth, emailProtection, msSmartcardLogin
+subjectKeyIdentifier = hash
+#authorityKeyIdentifier = keyid,issuer

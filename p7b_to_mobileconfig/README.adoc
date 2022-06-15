@@ -1,0 +1,33 @@
+= p7b_to_mobileconfig.py
+
+This script is used to take certificate bundles (.p7b) and build a configuration profile (.mobileconfig) that can be used in Jamf Pro or any other MDM to distribute certificates. It can read multiple .p7b files, extract the certificates from them and build a single .mobileconfig file containing all of the certificates.
+
+== Usage
+
+[source]
+----
+Usage: p7b_to_mobileconfig.py [options] file1.p7b file2.p7b ...
+       Run 'p7b_to_mobileconfig.py --help' for more information.
+
+Options:
+  -h, --help            show this help message and exit
+  -d, --debug           Enable verbose output.
+  -r, --removal-allowed
+                        Specifies that the profile can be removed.
+  --organization=ORGANIZATION
+                        Cosmetic name for the organization deploying the
+                        profile.
+----
+
+== Example
+
+After obtaining the intermediate certificates and the root certificates in p7b format, you can pass them as arguments to the script.
+
+[source]
+----
+~/src/macos/p7b_to_mobileconfig % ./p7b_to_mobileconfig.py int.p7b roots.p7b
+Enter a name for this configuration profile (i.e. PKI Trust 2022) PKI Trust 2022
+Writing .mobileconfig file to: ~/src/macos/p7b_to_mobileconfig/build/PKI Trust 2022.mobileconfig
+~/src/macos/p7b_to_mobileconfig % 
+----
+
