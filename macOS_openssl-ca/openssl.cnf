@@ -105,3 +105,8 @@ keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
 extendedKeyUsage = critical, clientAuth, emailProtection, msSmartcardLogin
 subjectKeyIdentifier = hash
 #authorityKeyIdentifier = keyid,issuer
+
+[ codesign_reqext ]
+keyUsage = critical,digitalSignature
+extendedKeyUsage = critical,codeSigning
+subjectKeyIdentifier = hash
