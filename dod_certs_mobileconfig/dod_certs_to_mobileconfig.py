@@ -19,10 +19,11 @@ import os.path
 import base64
 import optparse
 import re
-from plistlib import Data, writePlist, dump
+from plistlib import dump
 from uuid import uuid4
 from html.parser import HTMLParser
 from urllib.parse import urlparse
+import ssl
 
 class URLHtmlParser(HTMLParser):
     links = []
@@ -116,7 +117,7 @@ class ConfigurationProfile:
         else:
             certtype = "intermediate"
         
-        self._addCertificatePayload(Data(payload_content_bytes), name, certtype)
+        self._addCertificatePayload(bytes(payload_content_bytes), name, certtype)
 
     def finalizeAndSave(self, output_path):
         """Perform last modifications and save to an output plist.
@@ -144,7 +145,8 @@ def extract_dod_cert_url(content):
 
 def extract_dod_cert_zip_file(zip_url, tempdir):
     """ Takes the URL to the .zip file and extracts the contents to a temp directory.  Returns the location of the .pem file for processing"""
-    r = urllib.request.urlopen(url=zip_url)
+    context = ssl._create_unverified_context()
+    r = urllib.request.urlopen(url=zip_url, context=context)
     z = zipfile.ZipFile(io.BytesIO(r.read()))
     z.extractall(tempdir)
     return    
@@ -190,8 +192,9 @@ def main():
 
     # URL to the DOD PKE library, will parse its contents to locate the .zip file to process
     pke_library_url = "https://public.cyber.mil/pki-pke/pkipke-document-library/"
+    context = ssl._create_unverified_context()
 
-    pke_site_contents = urllib.request.urlopen(url=pke_library_url)
+    pke_site_contents = urllib.request.urlopen(url=pke_library_url, context=context)
 
     pke_bytes = pke_site_contents.read()
     pke_site_contents_string = pke_bytes.decode("utf8")
