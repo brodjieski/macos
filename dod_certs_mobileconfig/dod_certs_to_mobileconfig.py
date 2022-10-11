@@ -117,6 +117,7 @@ class ConfigurationProfile:
         else:
             certtype = "intermediate"
         
+        print(f'Adding {name} to profile...')
         self._addCertificatePayload(bytes(payload_content_bytes), name, certtype)
 
     def finalizeAndSave(self, output_path):
@@ -201,6 +202,7 @@ def main():
     pke_site_contents.close()
 
     certificate_url = extract_dod_cert_url(pke_site_contents_string)
+    print(f'Attempting to get .zip file from {certificate_url}')
 
     extract_dod_cert_zip_file(certificate_url, tempdir)
 
