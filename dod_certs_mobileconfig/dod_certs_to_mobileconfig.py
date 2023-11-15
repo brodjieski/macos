@@ -156,7 +156,7 @@ def find_p7b_file(tempdir):
     """ Attempts to return the path to the pkcs7 bundle file containing all of the certificates"""
     for dirpath, subdir, files in os.walk(tempdir):
         for file in files:
-            if "DoD.pem.p7b" in file:
+            if "der.p7b" in file:
                 return os.path.join(dirpath, file), os.path.basename(dirpath)
 
 def main():
@@ -209,7 +209,7 @@ def main():
     # extract the certificates in .pem format from the p7b file
     pem_bundle_file, pem_title = find_p7b_file(tempdir)
     process = subprocess.Popen(
-        ["openssl", "pkcs7", "-in", pem_bundle_file, "-print_certs", "-out", pem_file],
+        ["openssl", "pkcs7", "-in", pem_bundle_file, "-inform", "der", "-print_certs", "-out", pem_file],
         stdin = subprocess.PIPE,
         stdout = subprocess.PIPE,
         stderr = subprocess.PIPE,
