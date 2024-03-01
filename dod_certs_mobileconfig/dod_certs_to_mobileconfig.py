@@ -23,6 +23,7 @@ from plistlib import dump
 from uuid import uuid4
 from html.parser import HTMLParser
 from urllib.parse import urlparse
+from pathlib import Path
 import ssl
 
 class URLHtmlParser(HTMLParser):
@@ -40,7 +41,7 @@ class URLHtmlParser(HTMLParser):
 class ConfigurationProfile:
     """Class to create and manipulate Configuration Profiles.
     """
-    def __init__(self, identifier, uuid=False, removal_allowed=False, organization='', displayname=''):
+    def __init__(self, identifier, uuid=False, removal_allowed=False, organization='', displayname='', export=False):
         self.data = {}
         self.data['PayloadVersion'] = 1
         self.data['PayloadOrganization'] = organization
@@ -60,6 +61,8 @@ class ConfigurationProfile:
         
         # An empty list for 'sub payloads' that we'll fill later
         self.data['PayloadContent'] = []
+
+        self.export = export
     
     def _addCertificatePayload(self, payload_content, certname, certtype):
         """Add a Certificate payload to the profile. Takes a dict which will be the
@@ -103,11 +106,11 @@ class ConfigurationProfile:
         payload_content_bytes = base64.b64decode(payload_content_ascii)
     
 
-        name_regex_pattern = '(^subject.*)((?<=C.=)>*?.*)'
+        name_regex_pattern = '(^subject.*)((?<=CN = )>*?.*)'
         name_regex = re.compile(name_regex_pattern, flags=re.MULTILINE)
         name = name_regex.search(pemfile).group(2)
 
-        issuer_regex_pattern = '(^issuer.*)((?<=C.=)>*?.*)'
+        issuer_regex_pattern = '(^issuer.*)((?<=CN = )>*?.*)'
         issuer_regex = re.compile(issuer_regex_pattern, flags=re.MULTILINE)
         issuer = issuer_regex.search(pemfile).group(2)
         
@@ -119,6 +122,16 @@ class ConfigurationProfile:
         
         print(f'Adding {name} to profile...')
         self._addCertificatePayload(bytes(payload_content_bytes), name, certtype)
+
+        # write PEM to file
+        if self.export:
+            self._writePEMtoFile(pemfile, name)
+
+    def _writePEMtoFile(self, pemfile, name):
+        Path("./certs").mkdir(parents=True, exist_ok=True)
+        output_path = f"./certs/{name}.pem"
+        with open(output_path, 'w') as cert_file:
+            cert_file.write(pemfile)
 
     def finalizeAndSave(self, output_path):
         """Perform last modifications and save to an output plist.
@@ -179,6 +192,10 @@ def main():
         action="store",
         metavar='PATH',
         help="Output path for profile. Defaults to '<name of DOD Cert file>.mobileconfig' in the current working directory.")
+    parser.add_option('--export-certs', '-e',
+        action="store_true",
+        default=False,
+        help="""If set, will save individual certs into a ./certs folder.""")
 
     options, args = parser.parse_args()
 
@@ -237,7 +254,8 @@ def main():
         uuid=False,
         removal_allowed=options.removal_allowed,
         organization=options.organization,
-        displayname=pem_title)
+        displayname=pem_title,
+        export=options.export_certs)
     
     for cert in os.listdir(tempdir):
         if cert.startswith("DoD_CA-"):
