@@ -106,13 +106,13 @@ class ConfigurationProfile:
         payload_content_bytes = base64.b64decode(payload_content_ascii)
     
 
-        name_regex_pattern = '(^subject.*)((?<=CN = )>*?.*)'
+        name_regex_pattern = '(^subject.*)((CN\s?=\s?)(.*))'
         name_regex = re.compile(name_regex_pattern, flags=re.MULTILINE)
-        name = name_regex.search(pemfile).group(2)
+        name = name_regex.search(pemfile).group(4)
 
-        issuer_regex_pattern = '(^issuer.*)((?<=CN = )>*?.*)'
+        issuer_regex_pattern = '(^issuer.*)((CN\s?=\s?)(.*))'
         issuer_regex = re.compile(issuer_regex_pattern, flags=re.MULTILINE)
-        issuer = issuer_regex.search(pemfile).group(2)
+        issuer = issuer_regex.search(pemfile).group(4)
         
         # get type
         if issuer == name:
@@ -125,6 +125,7 @@ class ConfigurationProfile:
 
         # write PEM to file
         if self.export:
+            print(f'Writing {name}.pem to certs folder...')
             self._writePEMtoFile(pemfile, name)
 
     def _writePEMtoFile(self, pemfile, name):

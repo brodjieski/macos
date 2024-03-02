@@ -2,3 +2,5 @@
 .DS_Store
 index*
 serial*
+certs*
+*.mobileconfig
