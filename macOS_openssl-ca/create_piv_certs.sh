@@ -73,6 +73,29 @@ openssl pkcs12 \
     -passout pass:"${bundle_pass}" \
     -out "./newcerts/${name}-key_management.p12"
 
+# create csr for Digital Signature Cert
+openssl req \
+    -config ./openssl.cnf \
+    -newkey rsa -nodes -keyout "./out/${name}-digital-signature.key" \
+    -out "./out/${name}-digital-signature.csr" -extensions v3_digital_sign \
+    -subj "/O=$org/OU=$ou/emailAddress=$email/L=$city/ST=$state/C=$country/CN=$name-digital-signature"
+
+chmod 600 "./out/${name}-digital-signature.key"
+
+openssl ca -batch \
+    -out "./out/${name}-digital-signature.pem" -config ./openssl.cnf \
+    -extensions v3_digital_sign \
+    -passin pass:"${ca_pass}" \
+    -infiles "./out/${name}-digital-signature.csr"
+
+# create PKCS12 bundle
+openssl pkcs12 \
+    -export \
+    -in "./out/${name}-digital-signature.pem" \
+    -inkey "./out/${name}-digital-signature.key" \
+    -passout pass:"${bundle_pass}" \
+    -out "./newcerts/${name}-digital-signature.p12"
+
 echo "Certificates created successfully."
 echo "-----------------------------------------------------------------------------------------------------"
 echo -e "Import \033[1m${name}.p12\033[0m into the Authentication slot (9A) using yubikey manager."

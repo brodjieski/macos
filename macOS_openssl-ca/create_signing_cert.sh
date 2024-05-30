@@ -26,7 +26,7 @@ fi
 openssl req \
 	-config openssl.cnf \
 	-new -newkey rsa:2048 -nodes -keyout "./out/${name}.key" \
-	-out "./out/${name}.csr" -extensions codesign_reqext \
+	-out "./out/${name}.csr" \
     -subj "/O=$org/OU=$ou/emailAddress=$email/L=$city/ST=$state/C=$country/CN=$name"
 
 chmod 600 "./out/${name}.key"
@@ -35,7 +35,7 @@ chmod 600 "./out/${name}.key"
 
 openssl ca -batch \
     -out "./out/${name}.pem" -config ./openssl.cnf \
-    -notext -extensions codesign_reqext \
+    -notext \
     -passin pass:"${ca_pass}" \
     -infiles "./out/${name}.csr"
 
