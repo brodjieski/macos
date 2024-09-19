@@ -65,6 +65,7 @@ def main():
                                         key_dict[mcx_k] = [{profile["ProfileDisplayName"] : mcx_v}]
                         except KeyError:
                             print(f'Unknown error processing settings in {profile["ProfileDisplayName"]}')
+                            continue
                 else:
                     if key in key_dict:
                         key_dict[key].append({profile["ProfileDisplayName"]: value})
