@@ -56,12 +56,15 @@ def main():
             for key,value in items["PayloadContent"].items():
                 if key == "PayloadContentManagedPreferences":               
                     for k,v in items["PayloadContent"]['PayloadContentManagedPreferences'].items():
-                        for mcx in items["PayloadContent"]['PayloadContentManagedPreferences'][k]['Forced']:
-                            for mcx_k,mcx_v in mcx['mcx_preference_settings'].items():
-                                if mcx_k in key_dict:
-                                    key_dict[mcx_k].append({profile["ProfileDisplayName"] : mcx_v})
-                                else:
-                                    key_dict[mcx_k] = [{profile["ProfileDisplayName"] : mcx_v}]
+                        try:
+                            for mcx in items["PayloadContent"]['PayloadContentManagedPreferences'][k]['Forced']:
+                                for mcx_k,mcx_v in mcx['mcx_preference_settings'].items():
+                                    if mcx_k in key_dict:
+                                        key_dict[mcx_k].append({profile["ProfileDisplayName"] : mcx_v})
+                                    else:
+                                        key_dict[mcx_k] = [{profile["ProfileDisplayName"] : mcx_v}]
+                        except KeyError:
+                            print(f'Unknown error processing settings in {profile["ProfileDisplayName"]}')
                 else:
                     if key in key_dict:
                         key_dict[key].append({profile["ProfileDisplayName"]: value})
