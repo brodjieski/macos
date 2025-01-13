@@ -1,11 +1,24 @@
 name: Hello World
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      release_date:
+        description: "Date used to populated Source Release Date fields (YYYY-MM-DD)"
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: validate input
+        run: |
+          if [[ ${{ github.event.inputs.release_date }} ~= "" ]]; then 
+            echo "Using ${{ github.event.inputs.release_date }} for release date, continuing..."
+          else
+            echo "Invalid date, please use the format YYYY-MM-DD"
+            exit 1
+          fi
       - name: Greeting
         run: echo "Hello World!"
