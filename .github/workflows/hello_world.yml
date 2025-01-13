@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: validate input
         run: |
-          if [[ ${{ github.event.inputs.release_date }} ~= "" ]]; then 
+          if [[ "${{ github.event.inputs.release_date }}" =~  ^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$ ]]; then 
             echo "Using ${{ github.event.inputs.release_date }} for release date, continuing..."
           else
             echo "Invalid date, please use the format YYYY-MM-DD"
