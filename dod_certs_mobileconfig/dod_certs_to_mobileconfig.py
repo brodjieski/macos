@@ -258,6 +258,7 @@ def main():
     pem_bundle_files, pem_title = find_p7b_file(tempdir)
 
     for pem_bundle_file in pem_bundle_files:
+        print(f"processing bundle file {pem_bundle_file}")
         process = subprocess.Popen(
             [
                 "openssl",
@@ -279,7 +280,7 @@ def main():
 
         # split the .pem file into individual certificates
         split_process = subprocess.Popen(
-            ["split", "-p", "subject=", pem_file, pem_file_prefix],
+            ["split", "-c", "-p", "subject=", pem_file, pem_file_prefix],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
