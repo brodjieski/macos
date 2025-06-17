@@ -131,13 +131,15 @@ class ConfigurationProfile:
         else:
             certtype = "intermediate"
 
-        print(f"Adding {name} to profile...")
+        #print(f"Adding {name} to profile...")
         self._addCertificatePayload(bytes(payload_content_bytes), name, certtype)
 
         # write PEM to file
         if self.export:
             print(f"Writing {name}.pem to certs folder...")
             self._writePEMtoFile(pemfile, name)
+        
+        return name
 
     def _writePEMtoFile(self, pemfile, name):
         Path("./certs").mkdir(parents=True, exist_ok=True)
@@ -185,7 +187,7 @@ def find_p7b_file(tempdir):
     p7b_files = []
     for dirpath, subdir, files in os.walk(tempdir):
         for file in files:
-            if "der.p7b" in file:
+            if "der.p7b" in file and "Root_CA" not in file:
                 p7b_files.append(os.path.join(dirpath, file))
         pem_title = os.path.basename(dirpath)
     return p7b_files, pem_title
@@ -258,7 +260,7 @@ def main():
     pem_bundle_files, pem_title = find_p7b_file(tempdir)
 
     for pem_bundle_file in pem_bundle_files:
-        print(f"processing bundle file {pem_bundle_file}")
+        # print(f"processing bundle file {pem_bundle_file}")
         process = subprocess.Popen(
             [
                 "openssl",
@@ -303,15 +305,18 @@ def main():
         export=options.export_certs,
     )
 
+    added_certs = []
     for cert in os.listdir(tempdir):
         if cert.startswith("DoD_CA-"):
             f = open(os.path.join(tempdir, cert), "r")
             certData = f.read()
-            newPayload.addPayloadFromPEM(certData)
+            added_certs.append(newPayload.addPayloadFromPEM(certData))
             continue
         else:
             continue
-
+    
+    print("Added the following certificates to the configuration profile:")
+    print('\n'.join(str(x) for x in sorted(added_certs)))
     newPayload.finalizeAndSave(output_file)
 
 
