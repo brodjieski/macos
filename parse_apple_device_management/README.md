@@ -36,7 +36,7 @@ This tool helps security analysts and system administrators analyze Apple device
 ### Basic Usage
 
 ```bash
-python parse_device_management.py -p <platform>
+python parse_device_management.py -p <platform> -d <path to Apple's device management repo>
 ```
 
 ### Command Line Options
