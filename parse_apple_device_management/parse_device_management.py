@@ -159,8 +159,8 @@ def main() -> None:
     parser.add_argument(
         "-d", "--directory",
         dest="directory",
-        required=False,
-        default="./",
+        required=True,
+        default="",
         help="Directory to search for YAML files (default: current directory)"
     )
 
