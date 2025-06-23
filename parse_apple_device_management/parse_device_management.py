@@ -33,6 +33,33 @@ def normalize_platform(value: str) -> str:
     else:
         raise argparse.ArgumentTypeError(f"Unsupported platform: {value}")
 
+def skip_file(type_filter: str, data: dict) -> bool:
+    """Skip processing files if filter defined
+    
+    If a type filter is specified determine if the file should be skipped or
+    included in the processing.
+
+    Args:
+        type_filter: string value of a declaration or payload type
+        data: loaded data from YAML file being processed
+    """
+
+    if "payload" not in data:
+        return True
+
+    if not type_filter:
+        return False
+
+    if "declarationtype" in data["payload"]:
+        if data["payload"]["declarationtype"] == type_filter:
+            return False
+    
+    if "payloadtype" in data["payload"]:
+        if data["payload"]["payloadtype"] == type_filter:
+            return False
+    
+    return True
+
 def find_keys(directory: str, options: argparse.Namespace) -> None:
     """Find and extract payload keys from YAML configuration files.
     
@@ -45,6 +72,7 @@ def find_keys(directory: str, options: argparse.Namespace) -> None:
     """
     platform = options.platform
     os_filter = options.os_filter
+    type_filter = options.type_filter
     results = defaultdict(list)
 
     for root, _, files in os.walk(directory):
@@ -54,6 +82,8 @@ def find_keys(directory: str, options: argparse.Namespace) -> None:
                 try:
                     with open(file_path, 'r', encoding='utf-8') as f:
                         data = yaml.safe_load(f)
+                        if skip_file(type_filter, data):
+                            continue
                         if isinstance(data, dict):
                             # Try payloadkeys first
                             payload_keys = data.get("payloadkeys")
@@ -161,7 +191,15 @@ def main() -> None:
         dest="directory",
         required=True,
         default="",
-        help="Directory to search for YAML files (default: current directory)"
+        help="Directory to search for Apple's Device Managment repo"
+    )
+
+    parser.add_argument(
+        "-t", "--type",
+        dest="type_filter",
+        required=False,
+        default="",
+        help="Only provide results filtered on provided payload or declaration type"
     )
 
     options = parser.parse_args()
