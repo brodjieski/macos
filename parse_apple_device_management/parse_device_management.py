@@ -151,14 +151,19 @@ def print_results_table(results: Dict[str, List[Dict[str, Any]]], os_filter: str
         try:
             table_data = []
             for match in matches:
+                if not os_filter:  # Show all results if no filter specified
+                    table_data.append(match)
+                    continue
                 if "introduced" in match:
                     if os_filter in match["introduced"]:
                         table_data.append(match)
                 if "deprecated" in match:
                     if os_filter in match["deprecated"]:
                         table_data.append(match)
-                elif not os_filter:  # Show all results if no filter specified
-                    table_data.append(match)
+                elif "removed" in match:
+                    if os_filter in match["removed"]:
+                        table_data.append(match)
+                
 
         except KeyError:
             table_data = []
