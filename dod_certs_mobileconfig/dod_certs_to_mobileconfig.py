@@ -131,14 +131,14 @@ class ConfigurationProfile:
         else:
             certtype = "intermediate"
 
-        #print(f"Adding {name} to profile...")
+        # print(f"Adding {name} to profile...")
         self._addCertificatePayload(bytes(payload_content_bytes), name, certtype)
 
         # write PEM to file
         if self.export:
             print(f"Writing {name}.pem to certs folder...")
             self._writePEMtoFile(pemfile, name)
-        
+
         return name
 
     def _writePEMtoFile(self, pemfile, name):
@@ -167,6 +167,7 @@ def extract_dod_cert_url(content):
     """Takes the html content and parses the href tags to collect links.  Looks for the DoD.zip in the links and returns that URL"""
     parser = URLHtmlParser()
     parser.feed(content)
+    print(content)
     for url in parser.links:
         if "DoD.zip" in url:
             return url
@@ -242,7 +243,7 @@ def main():
     pem_file_prefix = tempdir + "/DoD_CA-"
 
     # URL to the DOD PKE library, will parse its contents to locate the .zip file to process
-    pke_library_url = "https://public.cyber.mil/pki-pke/pkipke-document-library/"
+    pke_library_url = "https://public.cyber.mil/pki-pke/document-library/"
     context = ssl._create_unverified_context()
 
     pke_site_contents = urllib.request.urlopen(url=pke_library_url, context=context)
@@ -251,7 +252,8 @@ def main():
     pke_site_contents_string = pke_bytes.decode("utf8")
     pke_site_contents.close()
 
-    certificate_url = extract_dod_cert_url(pke_site_contents_string)
+    # certificate_url = extract_dod_cert_url(pke_site_contents_string)
+    certificate_url = "https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_DoD.zip"
     print(f"Attempting to get .zip file from {certificate_url}")
 
     extract_dod_cert_zip_file(certificate_url, tempdir)
@@ -314,9 +316,9 @@ def main():
             continue
         else:
             continue
-    
+
     print("Added the following certificates to the configuration profile:")
-    print('\n'.join(str(x) for x in sorted(added_certs)))
+    print("\n".join(str(x) for x in sorted(added_certs)))
     newPayload.finalizeAndSave(output_file)
 
 
