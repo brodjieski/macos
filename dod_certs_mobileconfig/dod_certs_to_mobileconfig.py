@@ -5,8 +5,9 @@
 #                 generate a .mobileconfig file for use with an MDM.
 # Author        : Dan Brodjieski <brodjieski@gmail.com>
 # Date          : 11/17/2021
-# Version       : 0.1
+# Version       : 1.0
 # Changelog     : 11/17/2021 - Initial Script
+#                 05/07/2026 - Script cleanup and misc
 
 import base64
 import io
@@ -20,24 +21,9 @@ import sys
 import tempfile
 import urllib.request
 import zipfile
-from html.parser import HTMLParser
 from pathlib import Path
 from plistlib import dump
-from urllib.parse import urlparse
 from uuid import uuid4
-
-
-class URLHtmlParser(HTMLParser):
-    links = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag != "a":
-            return
-
-        for attr in attrs:
-            if "href" in attr[0]:
-                self.links.append(attr[1])
-                break
 
 
 class ConfigurationProfile:
@@ -158,22 +144,6 @@ def makeNewUUID():
     return str(uuid4())
 
 
-def errorAndExit(errmsg):
-    print >> sys.stderr, errmsg
-    exit(-1)
-
-
-def extract_dod_cert_url(content):
-    """Takes the html content and parses the href tags to collect links.  Looks for the DoD.zip in the links and returns that URL"""
-    parser = URLHtmlParser()
-    parser.feed(content)
-    print(content)
-    for url in parser.links:
-        if "DoD.zip" in url:
-            return url
-    return
-
-
 def extract_dod_cert_zip_file(zip_url, tempdir):
     """Takes the URL to the .zip file and extracts the contents to a temp directory.  Returns the location of the .pem file for processing"""
     context = ssl._create_unverified_context()
@@ -242,17 +212,6 @@ def main():
     pem_file = tempdir + "/dod.txt"
     pem_file_prefix = tempdir + "/DoD_CA-"
 
-    # URL to the DOD PKE library, will parse its contents to locate the .zip file to process
-    pke_library_url = "https://public.cyber.mil/pki-pke/document-library/"
-    context = ssl._create_unverified_context()
-
-    pke_site_contents = urllib.request.urlopen(url=pke_library_url, context=context)
-
-    pke_bytes = pke_site_contents.read()
-    pke_site_contents_string = pke_bytes.decode("utf8")
-    pke_site_contents.close()
-
-    # certificate_url = extract_dod_cert_url(pke_site_contents_string)
     certificate_url = "https://dl.dod.cyber.mil/wp-content/uploads/pki-pke/zip/unclass-certificates_pkcs7_DoD.zip"
     print(f"Attempting to get .zip file from {certificate_url}")
 
@@ -262,7 +221,6 @@ def main():
     pem_bundle_files, pem_title = find_p7b_file(tempdir)
 
     for pem_bundle_file in pem_bundle_files:
-        # print(f"processing bundle file {pem_bundle_file}")
         process = subprocess.Popen(
             [
                 "openssl",
